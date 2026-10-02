@@ -1,10 +1,10 @@
 {
   "name": "sam-landshaft-backend",
-  "version": "1.0.0-rc.1",
+  "version": "1.0.0-rc.2",
   "description": "",
   "author": "",
   "private": true,
-  "license": "UNLICENSED",
+  "license": "MIT",
   "scripts": {
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",

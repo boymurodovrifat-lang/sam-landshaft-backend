@@ -1,8 +1,9 @@
 cff-version: 1.2.0
 message: "Please cite the version of Sam-Landshaft used in your research. The matched research package is archived in Zenodo."
 title: "Sam-Landshaft backend"
-version: "1.0.0-rc.1"
+version: "1.0.0-rc.2"
 type: software
+license: MIT
 authors:
   - family-names: "Olimov"
     given-names: "Diyorbek"
@@ -21,7 +22,7 @@ preferred-citation:
       given-names: "Rifat"
     - family-names: "Olimov"
       given-names: "Diyorbek"
-  version: "1.0.0-rc.1"
+  version: "1.0.0-rc.2"
   date-released: "2026-10-02"
-  doi: "10.5281/zenodo.23101499"
-  url: "https://zenodo.org/records/23101499"
+  doi: "10.5281/zenodo.23106387"
+  url: "https://zenodo.org/records/23106387"
