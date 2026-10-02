@@ -1,0 +1,37 @@
+{
+  "status": "prepared_release_candidate_not_published",
+  "candidate_version": "v1.0.0-rc.1",
+  "observed_date": "2026-10-01",
+  "frontend_source_commit": "aafb4ce2cb50c7a3091c6e019614105f24f9e2b3",
+  "backend_source_commit": "407316df1377f95aad9d75239c9555ec130a94e3",
+  "software": {
+    "node": "24.19.0",
+    "npm": "11.9.0",
+    "python": "3.12.14",
+    "tifffile": "2026.9.20",
+    "rasterio": "1.5.2",
+    "rasterio_bundled_gdal": "3.12.2"
+  },
+  "datasets": [
+    {
+      "source": "https://api.sam-landshaft.uz/api/files/67/cog",
+      "file_bytes": 911893956,
+      "etag": "\"67-911893956-1785234032017\"",
+      "last_modified": "Tue, 28 Jul 2026 10:20:32 GMT",
+      "tile_index_sha256": "0f59083726d46926b6079e77ae3277001dd5411f2ed94e7a490f997dc9cdc46a"
+    },
+    {
+      "source": "https://api.sam-landshaft.uz/api/files/31/cog",
+      "file_bytes": 71688720,
+      "etag": "\"31-71688720-1785230150416\"",
+      "last_modified": "Tue, 28 Jul 2026 09:15:50 GMT",
+      "tile_index_sha256": "e4e204219388d02e7f0b49374b66deedf7ff6b2025032ec9c3870920ce7b1d01"
+    }
+  ],
+  "limitations": [
+    "Input COGs are not included or permanently archived.",
+    "Full-file SHA-256s not computed; tile-index hashes are not content checksums.",
+    "Original LST input and browser session log are not available.",
+    "Source license is pending agreement; release tags and DOI are not yet published."
+  ]
+}
