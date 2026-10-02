@@ -1,5 +1,5 @@
 cff-version: 1.2.0
-message: "Please cite the version of Sam-Landshaft used in your research. This is a prepared release candidate."
+message: "Please cite the version of Sam-Landshaft used in your research. The matched research package is archived in Zenodo."
 title: "Sam-Landshaft backend"
 version: "1.0.0-rc.1"
 type: software
@@ -13,3 +13,15 @@ keywords:
   - Cloud Optimized GeoTIFF
   - raster time series
   - Samarkand
+preferred-citation:
+  type: software
+  title: "Sam-Landshaft geoportal: frontend, backend and reproducibility scripts"
+  authors:
+    - family-names: "Boymurodov"
+      given-names: "Rifat"
+    - family-names: "Olimov"
+      given-names: "Diyorbek"
+  version: "1.0.0-rc.1"
+  date-released: "2026-10-02"
+  doi: "10.5281/zenodo.23101499"
+  url: "https://zenodo.org/records/23101499"

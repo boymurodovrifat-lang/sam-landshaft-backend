@@ -109,4 +109,4 @@ An open-source license has not yet been adopted by the rights holders. Public so
 
 ## Paper reproduction
 
-See [`reproducibility/README.md`](reproducibility/README.md) for evaluation scripts, observed inputs and results, and [`reproducibility/MANUSCRIPT_ALIGNMENT.md`](reproducibility/MANUSCRIPT_ALIGNMENT.md) for unresolved differences from the supplied manuscript. This is a prepared `v1.0.0-rc.1` candidate, not a published release or DOI record.
+See [`reproducibility/README.md`](reproducibility/README.md) for evaluation scripts, observed inputs and results, and [`reproducibility/MANUSCRIPT_ALIGNMENT.md`](reproducibility/MANUSCRIPT_ALIGNMENT.md) for unresolved differences from the supplied manuscript. The matched `v1.0.0-rc.1` review releases and evaluation package are archived in Zenodo: [DOI 10.5281/zenodo.23101499](https://doi.org/10.5281/zenodo.23101499). Source licensing remains pending rights-holder agreement; public access and DOI registration do not establish a complete reproducibility claim.
