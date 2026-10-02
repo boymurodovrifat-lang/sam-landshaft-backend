@@ -1,0 +1,18 @@
+{
+  "source": "https://api.sam-landshaft.uz/api/files/67/cog",
+  "longitude": 66.13495,
+  "latitude": 39.77712,
+  "row": 9407,
+  "column": 10892,
+  "crs": "EPSG:4326",
+  "native_value": -0.08815359324216843,
+  "formatted_value": "-0.0882",
+  "portal_value": "-0.0882",
+  "decimals": 4,
+  "matches_at_display_precision": true,
+  "python_version": "3.12.14",
+  "rasterio_version": "1.5.2",
+  "gdal_version": "3.12.2",
+  "tifffile_version": "2026.9.20",
+  "scope": "One full-resolution band-1 pixel. Not field validation or proof of all pixel values."
+}
