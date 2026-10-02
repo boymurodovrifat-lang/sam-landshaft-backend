@@ -1,0 +1,15 @@
+cff-version: 1.2.0
+message: "Please cite the version of Sam-Landshaft used in your research. This is a prepared release candidate."
+title: "Sam-Landshaft backend"
+version: "1.0.0-rc.1"
+type: software
+authors:
+  - family-names: "Olimov"
+    given-names: "Diyorbek"
+repository-code: "https://github.com/boymurodovrifat-lang/sam-landshaft-backend"
+url: "https://sam-landshaft.uz"
+keywords:
+  - geoportal
+  - Cloud Optimized GeoTIFF
+  - raster time series
+  - Samarkand

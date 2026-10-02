@@ -1,0 +1,28 @@
+node_modules
+dist
+coverage
+.env
+.env.local
+*.log
+.DS_Store
+
+# Storage
+storage/uploads/*
+storage/cog/*
+storage/videos/*
+!storage/uploads/.gitkeep
+!storage/cog/.gitkeep
+!storage/videos/.gitkeep
+
+# Prisma generated
+/generated/prisma
+prisma/migrations/dev.db*
+
+# TS incremental build info
+*.tsbuildinfo
+
+
+# Research evaluation environments and caches
+.venv-repro/
+__pycache__/
+reproducibility/results/new-run/
