@@ -1,0 +1,73 @@
+// SamGeo — Prisma Schema
+// Samarqand Landshaft Geoportali
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Admin {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String // bcrypt hash
+  name      String
+  role      Role     @default(ADMIN)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("admins")
+}
+
+enum Role {
+  ADMIN
+  SUPER_ADMIN
+}
+
+model Category {
+  id          Int      @id @default(autoincrement())
+  parentId    Int?     @map("parent_id")
+  parent      Category?  @relation("CategoryTree", fields: [parentId], references: [id], onDelete: SetNull)
+  children    Category[] @relation("CategoryTree")
+  name        String
+  slug        String   @unique
+  description String?
+  unit        String?
+  colorScheme String?  @map("color_scheme")
+  minValue    Float?   @map("min_value")
+  maxValue    Float?   @map("max_value")
+  sortOrder   Int      @default(0) @map("sort_order")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  files GeotiffFile[]
+
+  @@index([parentId])
+  @@map("categories")
+}
+
+model GeotiffFile {
+  id           Int      @id @default(autoincrement())
+  categoryId   Int      @map("category_id")
+  category     Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  year         Int
+  filename     String
+  cogPath      String   @map("cog_path") // Internal path to COG file
+  originalPath String   @map("original_path") // Internal path to original GeoTIFF
+  fileSize     BigInt   @map("file_size") // In bytes
+  minX         Float?   @map("min_x")
+  minY         Float?   @map("min_y")
+  maxX         Float?   @map("max_x")
+  maxY         Float?   @map("max_y")
+  width        Int?
+  height       Int?
+  uploadedAt   DateTime @default(now()) @map("uploaded_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  @@unique([categoryId, year])
+  @@index([year])
+  @@map("geotiff_files")
+}
