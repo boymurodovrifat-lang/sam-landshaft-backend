@@ -1,6 +1,6 @@
 {
-  "status": "prepared_release_candidate_not_published",
-  "candidate_version": "v1.0.0-rc.1",
+  "status": "MIT_licensed_review_version",
+  "candidate_version": "v1.0.0-rc.2",
   "observed_date": "2026-10-01",
   "frontend_source_commit": "aafb4ce2cb50c7a3091c6e019614105f24f9e2b3",
   "backend_source_commit": "407316df1377f95aad9d75239c9555ec130a94e3",
@@ -31,7 +31,9 @@
   "limitations": [
     "Input COGs are not included or permanently archived.",
     "Full-file SHA-256s not computed; tile-index hashes are not content checksums.",
-    "Original LST input and browser session log are not available.",
-    "Source license is pending agreement; release tags and DOI are not yet published."
-  ]
+    "Original LST input and browser session log are not available."
+  ],
+  "archive_doi": "10.5281/zenodo.23106387",
+  "license": "MIT",
+  "copyright": "Copyright (c) 2026 Rifat Boymurodov and Diyorbek Olimov"
 }
