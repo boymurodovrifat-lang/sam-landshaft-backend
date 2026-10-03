@@ -1,6 +1,9 @@
 import { parseBbox, BadBboxError } from './crop-bbox.dto';
 
 describe('parseBbox', () => {
+  it.each(['-Infinity,0,1,1', '0,0,Infinity,1', ',0,1,1', '-181,0,1,1', '0,-91,1,1', '0,0,181,1', '0,0,1,91'])('rejects unsafe bbox %s', raw => {
+    expect(() => parseBbox(raw)).toThrow(BadBboxError);
+  });
   it('parses well-formed "minLng,minLat,maxLng,maxLat"', () => {
     expect(parseBbox('66.5,39.2,67.5,40.0')).toEqual({
       minLng: 66.5,
