@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  HttpException,
   Injectable,
   Logger,
   NotFoundException,
@@ -108,7 +109,8 @@ export class FilesService {
       );
     }
 
-    const baseName = `${category.slug}_${year}_${Date.now()}`;
+    // Use numeric IDs rather than user-controlled category slugs for storage paths.
+    const baseName = `${category.id}_${year}_${crypto.randomBytes(12).toString('hex')}`;
     const originalPath = path.join(this.uploadDir, `${baseName}.tif`);
     const cogPath = path.join(this.cogDir, `${baseName}_cog.tif`);
 
@@ -130,8 +132,10 @@ export class FilesService {
     } catch (err) {
       this.logger.error(`COG konvertatsiya xatolik: ${(err as Error).message}`);
       await fs.unlink(originalPath).catch(() => {});
+      await fs.unlink(cogPath).catch(() => {});
+      if (err instanceof HttpException) throw err;
       throw new BadRequestException(
-        `GeoTIFF faylni COG formatiga o'girib bo'lmadi: ${(err as Error).message}`,
+        "GeoTIFF faylni COG formatiga o‘girib bo‘lmadi",
       );
     }
 
@@ -265,7 +269,13 @@ export class FilesService {
     const file = await this.findOne(id);
     const tmpName = `crop_${id}_${crypto.randomBytes(6).toString('hex')}.tif`;
     const tmpPath = path.join(os.tmpdir(), tmpName);
-    await this.gdal.cropBbox(file.cogPath, tmpPath, bbox);
+    try {
+      await this.gdal.cropBbox(file.cogPath, tmpPath, bbox);
+    } catch (err) {
+      await fs.unlink(tmpPath).catch(() => {});
+      await fs.unlink(`${tmpPath}.aux.xml`).catch(() => {});
+      throw err;
+    }
     const base = file.filename.replace(/\.tiff?$/i, '');
     return { path: tmpPath, filename: `${base}_crop.tif` };
   }
@@ -307,6 +317,7 @@ export class FilesService {
           validPixels,
         });
       } catch (err) {
+        if (err instanceof HttpException) throw err;
         this.logger.warn(
           `Year stats failed for fileId=${f.id}: ${(err as Error).message}`,
         );

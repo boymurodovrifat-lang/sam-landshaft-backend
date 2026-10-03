@@ -3,8 +3,13 @@ import * as childProcess from 'child_process';
 import { GdalService } from './gdal.service';
 
 jest.mock('child_process', () => ({
-  execFile: jest.fn((_bin, _args, cb: any) =>
-    cb(null, { stdout: '', stderr: '' }),
+  execFile: jest.fn((_bin, args, _options, cb: any) =>
+    cb(null, {
+      stdout: args.includes('VRT')
+        ? '<VRTDataset rasterXSize="100" rasterYSize="100"></VRTDataset>'
+        : '',
+      stderr: '',
+    }),
   ),
 }));
 
@@ -13,7 +18,7 @@ describe('GdalService.cropBbox', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     svc = new GdalService({
-      get: jest.fn(() => 'gdal_translate'),
+      get: jest.fn((_key, fallback) => fallback),
     } as unknown as ConfigService);
   });
 
@@ -36,7 +41,12 @@ describe('GdalService.cropBbox', () => {
       '39.2',
     ]);
     expect(args[args.length - 2]).toBe('/in.tif');
-    expect(args[args.length - 1]).toBe('/out.tif');
+    expect(args[args.length - 1]).toBe('/vsistdout/');
+    expect(
+      (childProcess.execFile as unknown as jest.Mock).mock.calls[1][1].slice(
+        -2,
+      ),
+    ).toEqual(['/in.tif', '/out.tif']);
   });
 });
 
@@ -45,7 +55,7 @@ describe('GdalService.statsForBbox', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     svc = new GdalService({
-      get: jest.fn(() => 'gdal_translate'),
+      get: jest.fn((_key, fallback) => fallback),
     } as unknown as ConfigService);
   });
 
@@ -65,12 +75,19 @@ describe('GdalService.statsForBbox', () => {
       ],
     });
     const mock = childProcess.execFile as unknown as jest.Mock;
-    // First call: gdal_translate (crop). Second call: gdalinfo -stats.
+    // VRT dimension check, raster crop, then gdalinfo statistics.
     mock
-      .mockImplementationOnce((_b: string, _a: string[], cb: any) =>
+      .mockImplementationOnce((_b: string, _a: string[], _o: any, cb: any) =>
+        cb(null, {
+          stdout:
+            '<VRTDataset rasterXSize="100" rasterYSize="100"></VRTDataset>',
+          stderr: '',
+        }),
+      )
+      .mockImplementationOnce((_b: string, _a: string[], _o: any, cb: any) =>
         cb(null, { stdout: '', stderr: '' }),
       )
-      .mockImplementationOnce((_b: string, _a: string[], cb: any) =>
+      .mockImplementationOnce((_b: string, _a: string[], _o: any, cb: any) =>
         cb(null, { stdout: fakeJson, stderr: '' }),
       );
     const out = await svc.statsForBbox('/in.tif', {
@@ -87,16 +104,23 @@ describe('GdalService.statsForBbox', () => {
       validPercent: 75,
     });
     expect(mock.mock.calls[0][0]).toBe('gdal_translate');
-    expect(mock.mock.calls[1][0]).toBe('gdalinfo');
+    expect(mock.mock.calls[2][0]).toBe('gdalinfo');
   });
 
   it('returns null fields when gdalinfo reports no stats', async () => {
     const mock = childProcess.execFile as unknown as jest.Mock;
     mock
-      .mockImplementationOnce((_b: string, _a: string[], cb: any) =>
+      .mockImplementationOnce((_b: string, _a: string[], _o: any, cb: any) =>
+        cb(null, {
+          stdout:
+            '<VRTDataset rasterXSize="100" rasterYSize="100"></VRTDataset>',
+          stderr: '',
+        }),
+      )
+      .mockImplementationOnce((_b: string, _a: string[], _o: any, cb: any) =>
         cb(null, { stdout: '', stderr: '' }),
       )
-      .mockImplementationOnce((_b: string, _a: string[], cb: any) =>
+      .mockImplementationOnce((_b: string, _a: string[], _o: any, cb: any) =>
         cb(null, { stdout: JSON.stringify({ bands: [{}] }), stderr: '' }),
       );
     const out = await svc.statsForBbox('/in.tif', {
@@ -111,6 +135,50 @@ describe('GdalService.statsForBbox', () => {
       mean: null,
       stdDev: null,
       validPercent: 0,
+    });
+  });
+});
+
+describe('GDAL resource limits', () => {
+  const bbox = { minLng: 66, minLat: 39, maxLng: 67, maxLat: 40 };
+  const config = new ConfigService({
+    GDAL_MAX_CONCURRENT: 1,
+    GDAL_TIMEOUT_MS: 1000,
+    GDAL_MAX_CROP_PIXELS: 10000,
+  });
+  beforeEach(() => jest.clearAllMocks());
+  it('rejects oversized crops before any raster output is written', async () => {
+    const mock = childProcess.execFile as unknown as jest.Mock;
+    mock.mockImplementationOnce((_b, _a, _o, cb) =>
+      cb(null, {
+        stdout:
+          '<VRTDataset rasterXSize="100000" rasterYSize="100000"></VRTDataset>',
+        stderr: '',
+      }),
+    );
+    await expect(
+      new GdalService(config).cropBbox('/in', '/out', bbox),
+    ).rejects.toMatchObject({ status: 413 });
+    expect(mock).toHaveBeenCalledTimes(1);
+  });
+  it('bounds concurrent processes and releases capacity after failure', async () => {
+    const mock = childProcess.execFile as unknown as jest.Mock;
+    let finish: any;
+    mock.mockImplementationOnce((_b, _a, _o, cb) => {
+      finish = cb;
+    });
+    const svc = new GdalService(config);
+    const first = svc.getInfo('/in');
+    await expect(svc.getInfo('/other')).rejects.toMatchObject({ status: 503 });
+    finish(new Error('timeout'));
+    await expect(first).rejects.toThrow();
+    mock.mockImplementationOnce((_b, _a, _o, cb) =>
+      cb(null, { stdout: '{"size":[1,1]}', stderr: '' }),
+    );
+    await expect(svc.getInfo('/in')).resolves.toMatchObject({ width: 1 });
+    expect(mock.mock.calls[0][2]).toMatchObject({
+      timeout: 1000,
+      killSignal: 'SIGKILL',
     });
   });
 });

@@ -1,3 +1,4 @@
+import { requireJwtSecret } from '../security-config';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
@@ -19,11 +20,13 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      secretOrKey: config.get<string>('JWT_SECRET', 'dev-secret'),
+      algorithms: ['HS256'],
+      secretOrKey: requireJwtSecret(config),
     });
   }
 
   async validate(payload: JwtPayload) {
+    if (!Number.isSafeInteger(payload.sub) || payload.sub <= 0) throw new UnauthorizedException();
     const admin = await this.prisma.admin.findUnique({
       where: { id: payload.sub },
     });

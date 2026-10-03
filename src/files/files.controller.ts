@@ -1,3 +1,5 @@
+import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
+import { SuperAdminGuard } from '../auth/guards/super-admin.guard';
 import {
   BadRequestException,
   Controller,
@@ -56,13 +58,14 @@ export class FilesController {
 
   // NOTE: `stats` must be declared BEFORE `:id` — otherwise Nest matches
   // `/files/stats` against `findOne` and parses `stats` as the id (NaN → 400).
+  @UseGuards(ThrottlerGuard)
   @Get('stats')
   async stats(
     @Query('categoryId') categoryIdRaw: string,
     @Query('bbox') bboxRaw: string,
   ) {
     const categoryId = Number(categoryIdRaw);
-    if (!Number.isFinite(categoryId)) {
+    if (!Number.isSafeInteger(categoryId) || categoryId <= 0) {
       throw new BadRequestException("categoryId raqam bo'lishi kerak");
     }
     try {
@@ -112,7 +115,7 @@ export class FilesController {
     return this.service.update(id, dto);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, SuperAdminGuard)
   @Delete(':id')
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.service.remove(id);
@@ -189,6 +192,7 @@ export class FilesController {
    * Crop the file's COG to the given lon/lat bbox and stream a fresh GeoTIFF.
    * Tmp file is unlinked once the stream closes.
    */
+  @UseGuards(ThrottlerGuard)
   @Get(':id/crop')
   async crop(
     @Param('id', ParseIntPipe) id: number,
@@ -217,7 +221,8 @@ export class FilesController {
     const stream = fs.createReadStream(out.path);
     const cleanup = () => fs.unlink(out.path, () => {});
     stream.on('close', cleanup);
-    stream.on('error', cleanup);
+    stream.on('error', () => { cleanup(); res.destroy(); });
+    res.on('close', () => { stream.destroy(); cleanup(); });
     stream.pipe(res);
   }
 }

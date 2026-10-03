@@ -1,3 +1,4 @@
+import { requireJwtSecret } from './security-config';
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
@@ -13,7 +14,7 @@ import { JwtStrategy } from './strategies/jwt.strategy';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
-        secret: config.get<string>('JWT_SECRET', 'dev-secret'),
+        secret: requireJwtSecret(config),
         signOptions: {
           expiresIn: config.get<string>('JWT_EXPIRES_IN', '7d') as any,
         },

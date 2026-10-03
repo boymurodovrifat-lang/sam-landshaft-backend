@@ -95,7 +95,7 @@ DATABASE_URL="postgresql://samlandshaft:STRONG-PASSWORD@localhost:5432/sam_lands
 JWT_SECRET=<openssl rand -hex 64 bilan yarating>
 CORS_ORIGIN=https://sam-landshaft.uz,https://admin.sam-landshaft.uz
 SEED_ADMIN_EMAIL=admin@sam-landshaft.uz
-SEED_ADMIN_PASSWORD=<kuchli parol>
+SEED_ADMIN_PASSWORD=<kamida 16 belgili noyob parol>
 UPLOAD_DIR=/home/samlandshaft/storage/uploads
 COG_DIR=/home/samlandshaft/storage/cog
 VIDEO_DIR=/home/samlandshaft/storage/videos
@@ -211,3 +211,46 @@ df -h                                                # disk holati
 du -sh /home/samlandshaft/storage/*                 # qaysi papka katta
 pm2 flush                                            # loglarni tozalash
 ```
+
+
+## Xavfsizlik tuzatishlarini mavjud serverga o‘rnatish
+
+Avval PostgreSQL bazasi va raster omborining zaxira nusxasini oling. `.env` faylini
+ommaviy repozitoriyga joylamang (`chmod 600 .env`). `JWT_SECRET` uchun yangi tasodifiy
+kalit tayyorlang. Kalit yangilanganda barcha eski administrator sessiyalari bekor bo‘ladi.
+
+`HOST=127.0.0.1` mahalliy Nginx uchun standart. Dockerda `HOST=0.0.0.0` ishlatiladi;
+host portini faqat mahalliy interfeysga chiqaring: `127.0.0.1:3000:3000`.
+Tashqi load balancer uchun ishonchli proxy manzillarini alohida moslashtiring;
+foydalanuvchi bergan `X-Forwarded-For` sarlavhasiga ko‘r-ko‘rona ishonmang.
+
+Bu versiya dastlabki Prisma migratsiyasini qo‘shadi. **Mavjud, ma’lumotli bazada**
+uni yaratish migratsiyasi sifatida ishga tushirmang. Zaxira olingach, uning amaldagi
+sxemasini `prisma/schema.prisma` bilan tekshiring. Quyidagi tekshiruv sxema teng
+bo‘lsa 0, farqlar bo‘lsa 2 kod bilan tugaydi:
+
+```bash
+npx prisma migrate diff --from-url "$DATABASE_URL" --to-schema-datamodel prisma/schema.prisma --exit-code
+```
+
+Bu buyruq uchun `DATABASE_URL` xavfsiz server muhitida o‘rnatilgan bo‘lishi kerak;
+`.env` avtomatik shell o‘zgaruvchisi emas. Farqlarni alohida ko‘rib chiqing.
+**Faqat sxema tengligi tasdiqlangandan keyin**, migratsiyasiz eski bazani boshlang‘ich
+holat sifatida belgilang:
+
+```bash
+npx prisma migrate resolve --applied 20261003000000_initial
+```
+
+Yangi bo‘sh bazada bu belgilash kerak emas; `prisma migrate deploy` jadvallarni yaratadi.
+`deploy.sh` migratsiya xatosida to‘xtaydi va ma’lumot yo‘qotishni qabul qilmaydi.
+
+Eski administrator paroli seedni qayta ishga tushirish bilan o‘zgarmaydi. `.env`da
+tegishli email va yangi kuchli parolni xavfsiz o‘rnating, keyin:
+
+```bash
+npm run prisma:admin-password
+```
+
+Yangilangan JWT kaliti bilan API qayta ishga tushirilgach, yangi parol bilan kiring.
+Bu qo‘llanma serverda buyruqlar bajarilgan yoki maxfiy kalit almashtirilganini anglatmaydi.
