@@ -32,6 +32,7 @@ export class BigIntSerializationInterceptor implements NestInterceptor {
     if (typeof value === 'object') {
       const result: any = {};
       for (const key of Object.keys(value)) {
+        if (key === 'cogPath' || key === 'originalPath') continue;
         result[key] = this.serialize(value[key]);
       }
       return result;
