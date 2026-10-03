@@ -45,10 +45,19 @@ npm run start:dev
 
 API will be available at http://localhost:3000/api
 
-## Default admin
+## Administrator and security configuration
 
-- Email: `admin@sam-landshaft.uz`
-- Password: `ChangeMe123!`
+There is no default password or JWT signing key. Before starting, set a private random
+`JWT_SECRET` (at least 32 characters; generate with `openssl rand -hex 32`).
+Set `SEED_ADMIN_EMAIL` and a unique `SEED_ADMIN_PASSWORD` of at least 16 characters
+before running the seed command. Do not commit `.env` or disclose these values.
+The seed preserves an existing account's password. To explicitly change it, configure
+the credentials privately and run `npm run prisma:admin-password`.
+
+Deleting files/categories requires `SUPER_ADMIN`; both admin roles can upload and edit.
+Login is limited to 5 requests/minute per client IP and crop/statistics to 10/minute
+per endpoint/IP. COG range streaming is not throttled by these rules.
+See [SECURITY.md](SECURITY.md) for deployment requirements and remaining limitations.
 
 ## Endpoints
 
@@ -61,13 +70,13 @@ API will be available at http://localhost:3000/api
 - `GET /api/categories/:id`
 - `POST /api/categories` (auth)
 - `PATCH /api/categories/:id` (auth)
-- `DELETE /api/categories/:id` (auth)
+- `DELETE /api/categories/:id` (SUPER_ADMIN)
 
 ### Files
 - `GET /api/files?categoryId=&year=` — list
 - `GET /api/files/:id`
 - `POST /api/files/upload` (auth, multipart: file, categoryId, year)
-- `DELETE /api/files/:id` (auth)
+- `DELETE /api/files/:id` (SUPER_ADMIN)
 - `GET /api/files/:id/download?format=tiff|cog`
 - `GET /api/files/:id/cog` — streams COG with Range support for Leaflet
 - `GET /api/files/:id/crop?bbox=minLng,minLat,maxLng,maxLat` — crops a COG to a GeoTIFF

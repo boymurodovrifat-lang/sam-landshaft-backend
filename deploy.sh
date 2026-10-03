@@ -2,33 +2,36 @@
 # Sam-Landshaft — VPS deployment script
 # Ishlatish: cd ~/apps/sam-landshaft-backend && git pull && ./deploy.sh
 
-set -e
+set -euo pipefail
 
 cd "$(dirname "$0")"
 
 echo ">>> Installing dependencies..."
-npm install --no-audit --no-fund
+npm ci --no-audit --no-fund
 
 echo ">>> Generating Prisma client..."
 npx prisma generate
 
-echo ">>> Running migrations..."
-npx prisma migrate deploy 2>/dev/null || npx prisma db push --accept-data-loss
-
-echo ">>> Building app (webpack)..."
+echo ">>> Building app..."
 rm -rf dist
-npx nest build --webpack
+npm run build
 
 # Build natijasini tekshirish
 if [ ! -f dist/main.js ]; then
   echo "ERROR: dist/main.js topilmadi!"
-  echo "Webpack build muvaffaqiyatsiz. Loglarni tekshiring."
+  echo "Build muvaffaqiyatsiz. Loglarni tekshiring."
   exit 1
 fi
 echo ">>> Build OK: dist/main.js mavjud"
 
 echo ">>> Ensuring storage folders exist..."
 mkdir -p storage/uploads storage/cog storage/videos logs
+
+echo ">>> Checking required security configuration..."
+node -e "require('dotenv').config({ quiet: true }); require('./dist/auth/security-config').requireJwtSecret({ get: key => process.env[key] });"
+
+echo ">>> Running reviewed migrations (failure stops deployment)..."
+npx prisma migrate deploy
 
 echo ">>> Restarting PM2..."
 if pm2 describe sam-landshaft-api > /dev/null 2>&1; then

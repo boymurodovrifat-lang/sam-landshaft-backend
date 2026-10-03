@@ -35,6 +35,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 ENV NODE_ENV=production
+# Container networking is controlled by the host publish address.
+ENV HOST=0.0.0.0
 
 COPY package*.json ./
 RUN npm ci --omit=dev && npm cache clean --force
