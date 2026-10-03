@@ -9,6 +9,8 @@ async function bootstrap() {
     bodyParser: true,
   });
   const config = app.get(ConfigService);
+  // Only trust a local reverse proxy; never trust arbitrary X-Forwarded-For.
+  app.getHttpAdapter().getInstance().set('trust proxy', 'loopback');
   const logger = new Logger('Bootstrap');
 
   app.setGlobalPrefix('api');
@@ -38,7 +40,7 @@ async function bootstrap() {
   );
 
   const port = config.get<number>('PORT', 3000);
-  const server = await app.listen(port);
+  const server = await app.listen(port, config.get<string>('HOST', '127.0.0.1'));
   // Katta GeoTIFF (2 GB gacha) yuklashda sekin ulanishlarda so'rov 5 daqiqadan
   // oshib ketishi mumkin. Node'ning default requestTimeout (300s) ni oshiramiz —
   // aks holda upload 408 / "Network Error" bilan uziladi.
