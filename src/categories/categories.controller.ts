@@ -1,3 +1,4 @@
+import { SuperAdminGuard } from '../auth/guards/super-admin.guard';
 import {
   BadRequestException,
   Body,
@@ -48,7 +49,7 @@ export class CategoriesController {
     return this.service.update(id, dto);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, SuperAdminGuard)
   @Delete(':id')
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.service.remove(id);
