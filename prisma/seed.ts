@@ -1,11 +1,13 @@
+import 'dotenv/config';
 import { PrismaClient, Role } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
+
+import { requireSeedCredentials } from '../src/auth/security-config';
 
 const prisma = new PrismaClient();
 
 async function main() {
-  const adminEmail = process.env.SEED_ADMIN_EMAIL || 'admin@sam-landshaft.uz';
-  const adminPassword = process.env.SEED_ADMIN_PASSWORD || 'ChangeMe123!';
+  const { email: adminEmail, password: adminPassword } = requireSeedCredentials(process.env);
 
   const hashed = await bcrypt.hash(adminPassword, 10);
 
